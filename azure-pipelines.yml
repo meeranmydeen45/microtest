@@ -1,0 +1,69 @@
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  imageRepo: sampleapp
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Docker@2
+      displayName: Build an image
+      inputs:
+        containerRegistry: 'K8ExamplesACR'
+        repository: '$(imageRepo)'
+        command: 'buildAndPush'
+        Dockerfile: '$(Build.SourcesDirectory)/app/Dockerfile'
+        tags: |
+          $(tag)
+          latest
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/Kubernetes'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
+
+- stage: Deploy
+  displayName: Deploy to Dev
+  dependsOn: Build
+  variables:
+    acrsecret: k8examplesacrauth
+  jobs:
+  - job: Deploy
+    displayName: Deploy to My AKS
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        artifactName: 'manifests'
+        targetPath: '$(Pipeline.Workspace)/manifests'
+    - task: KubernetesManifest@1
+      inputs:
+        action: 'createSecret'
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: 'K8S_Examples_cluster_default'
+        namespace: 'default'
+        secretType: 'dockerRegistry'
+        secretName: '$(acrsecret)'
+        dockerRegistryEndpoint: 'K8ExamplesACR'
+    - task: KubernetesManifest@1
+      inputs:
+        action: 'deploy'
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: 'K8S_Examples_cluster_default'
+        namespace: 'default'
+        manifests:
+          $(Pipeline.Workspace)/manifests/deployment.yaml
+          $(Pipeline.Workspace)/manifests/Service.yaml
