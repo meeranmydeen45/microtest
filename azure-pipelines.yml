@@ -57,15 +57,12 @@ stages:
         secretType: 'dockerRegistry'
         secretName: '$(acrsecret)'
         dockerRegistryEndpoint: 'K8ExamplesACR'
-
-    - script: dir $(Pipeline.Workspace)/manifests
-      displayName: Cloning Manifest Files From Repo
     - task: KubernetesManifest@0
       displayName: Deploying Manifests InTo AKS
       inputs:
         action: 'deploy'
         kubernetesServiceConnection: 'K8S_Examples_cluster_default'
         namespace: 'default'
-        manifests: |
-         manifests/deployment.yml
-         manifests/service.yml
+        manifests:
+          $(Pipeline.Workspace)/manifests/deployment.yml
+          $(Pipeline.Workspace)/manifests/service.yml
