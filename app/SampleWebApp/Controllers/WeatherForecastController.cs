@@ -16,7 +16,7 @@ namespace SampleWebApp.Controllers
         [HttpGet]
         public ActionResult Get()
         {
-           return Ok("Hello !! I am running on AKS K8s Cluster Updated through CI/CD!!");
+           return Ok("Hello !! I am running on AKS K8s Cluster Updated through CI/CD, Update 3:35!!");
         }
     }
 }
