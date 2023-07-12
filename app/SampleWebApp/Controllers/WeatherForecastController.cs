@@ -16,7 +16,7 @@ namespace SampleWebApp.Controllers
         [HttpGet]
         public ActionResult Get()
         {
-           return Ok("Hurray!! Changes pushed from code editor !!");
+           return Ok("Hello !! I am running on AKS K8s Cluster!!");
         }
     }
 }
