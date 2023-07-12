@@ -26,7 +26,7 @@ stages:
         Dockerfile: '$(Build.SourcesDirectory)/app/Dockerfile'
         tags: |
           $(tag)
-          latest
+
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Pipeline.Workspace)/s/Kubernetes'
@@ -38,6 +38,7 @@ stages:
   dependsOn: Build
   variables:
     acrsecret: k8examplesacrauth
+    acrdevurl: 'microtestm.azurecr.io'
   jobs:
   - deployment: Deploy
     displayName: Deploy to AKS!!
@@ -60,12 +61,12 @@ stages:
               secretType: 'dockerRegistry'
               secretName: '$(acrsecret)'
               dockerRegistryEndpoint: 'K8ExamplesACR'
-              
+        
           - task: KubernetesManifest@0
-            displayName: Deploying Manifests InTo AKS
             inputs:
               action: 'deploy'
               namespace: 'default'
               manifests: |
                 $(Pipeline.Workspace)/manifests/deployment.yml
                 $(Pipeline.Workspace)/manifests/service.yml
+              containers: '$(acrdevurl)/$(imageRepo):$(tag)'
