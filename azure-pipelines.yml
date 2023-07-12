@@ -63,6 +63,6 @@ stages:
         action: 'deploy'
         kubernetesServiceConnection: 'K8S_Examples_cluster_default'
         namespace: 'default'
-        manifests:
+        manifests: |
           $(Pipeline.Workspace)/manifests/deployment.yml
           $(Pipeline.Workspace)/manifests/service.yml
