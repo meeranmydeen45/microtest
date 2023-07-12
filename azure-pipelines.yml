@@ -39,30 +39,33 @@ stages:
   variables:
     acrsecret: k8examplesacrauth
   jobs:
-  - job: Deploy
-    displayName: Deploy to My AKS
+  - deployment: Deploy
+    displayName: Deploy to AKS!!
+    environment: 'k8sdev.default'
     pool:
       vmImage: ubuntu-latest
-    steps:
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        buildType: 'current'
-        artifactName: 'manifests'
-        targetPath: '$(Pipeline.Workspace)/manifests'
-    - task: KubernetesManifest@0
-      inputs:
-        action: 'createSecret'
-        kubernetesServiceConnection: 'K8S_Examples_cluster_default'
-        namespace: 'default'
-        secretType: 'dockerRegistry'
-        secretName: '$(acrsecret)'
-        dockerRegistryEndpoint: 'K8ExamplesACR'
-    - task: KubernetesManifest@0
-      displayName: Deploying Manifests InTo AKS
-      inputs:
-        action: 'deploy'
-        kubernetesServiceConnection: 'K8S_Examples_cluster_default'
-        namespace: 'default'
-        manifests: |
-          $(Pipeline.Workspace)/manifests/deployment.yml
-          $(Pipeline.Workspace)/manifests/service.yml
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'manifests'
+              targetPath: '$(Pipeline.Workspace)/manifests'
+          - task: KubernetesManifest@0
+            inputs:
+              action: 'createSecret'
+              namespace: 'default'
+              secretType: 'dockerRegistry'
+              secretName: '$(acrsecret)'
+              dockerRegistryEndpoint: 'K8ExamplesACR'
+              
+          - task: KubernetesManifest@0
+            displayName: Deploying Manifests InTo AKS
+            inputs:
+              action: 'deploy'
+              namespace: 'default'
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/service.yml
