@@ -16,7 +16,7 @@ namespace SampleWebApp.Controllers
         [HttpGet]
         public ActionResult Get()
         {
-           return Ok(" Hurray!! Modified Version Working Fine !!");
+           return Ok("Hurray!! Changes pushed from code editor !!");
         }
     }
 }
